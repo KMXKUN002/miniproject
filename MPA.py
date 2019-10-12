@@ -41,33 +41,33 @@ alarmPlaying = False
 
 
 def reset():
-	global systemStart
+    global systemStart
 
-	systemStart = time.time()
-	
+    systemStart = time.time()
+    
 def freqInc():
-	global monitorFrequency
+    global monitorFrequency
 
-	monitorFrequency = (monitorFrequency+1)%3	
+    monitorFrequency = (monitorFrequency+1)%3   
 
 def rtcTime():
-	
-	#now = datetime.now()
-	
-	#write_byte_data(addr, 0x02, now.hour)
-	#write_byte_data(addr, 0x01, now.minute)
+    
+    #now = datetime.now()
+    
+    #write_byte_data(addr, 0x02, now.hour)
+    #write_byte_data(addr, 0x01, now.minute)
     #write_byte_data(addr, 0x00, now.second)
 
-	#HH = REMEMBER.read_byte_data(addr,0x02)
-	#MM = REMEMBER.read_byte_data(addr,0x01)
-	#SS = REMEMBER.read_byte_data(addr,0x00)
-	
-	
-	r = time.gmtime()
-	print("RTC time | {}:{}:{}".format (r.tm_hour, r.tm_min, r.tm_sec))
+    #HH = REMEMBER.read_byte_data(addr,0x02)
+    #MM = REMEMBER.read_byte_data(addr,0x01)
+    #SS = REMEMBER.read_byte_data(addr,0x00)
+    
+    
+    r = time.gmtime()
+    print("RTC time | {}:{}:{}".format (r.tm_hour, r.tm_min, r.tm_sec))
 
 def timer():
-	"""
+    """
     global systemHours
     global systemMins
     global systemSecs
@@ -81,53 +81,53 @@ def timer():
             systemHours+=1
     
     print("Sys Timer| {}:{}:{}".format(systemHours,systemMins,systemSecs))
-	"""
-	
-	global systemStart
-	
-	t = time.localtime(time.time() - systemStart)
-	print ("Sys Timer| {}:{}:{}".format (t.tm_hour, t.tm_min, t.tm_sec))
+    """
+    
+    global systemStart
+    
+    t = time.localtime(time.time() - systemStart)
+    print ("Sys Timer| {}:{}:{}".format (t.tm_hour, t.tm_min, t.tm_sec))
 
 
 def alarm():
-	global timeSinceAlarm, alarmPlaying, systemStart
-	if (alarmPlaying):
-		print ("!!!!!! Alarm on !!!!!!")
+    global timeSinceAlarm, alarmPlaying, systemStart
+    if (alarmPlaying):
+        print ("!!!!!! Alarm on !!!!!!")
 
-	age = time.time() - systemStart
-	
-	dacReading = dacOut()
-	if (dacReading > 2.65 or dacReading < 0.65):
-		if (age - timeSinceAlarm > 180 or timeSinceAlarm == 0 or age < timeSinceAlarm):
-			GPIO.output (6, True)
-			alarmPlaying = True
+    age = time.time() - systemStart
+    
+    dacReading = dacOut()
+    if (dacReading > 2.65 or dacReading < 0.65):
+        if (age - timeSinceAlarm > 180 or timeSinceAlarm == 0 or age < timeSinceAlarm):
+            GPIO.output (6, True)
+            alarmPlaying = True
 
 
 def dismissAlarm():
-	global timeSinceAlarm, alarmPlaying, systemStart
-	GPIO.output (6, False)
-	alarmPlaying = False
-	timeSinceAlarm = time.time() - systemStart
+    global timeSinceAlarm, alarmPlaying, systemStart
+    GPIO.output (6, False)
+    alarmPlaying = False
+    timeSinceAlarm = time.time() - systemStart
 
 
 #read data from the adc
 def ReadChan(channel):
-	global spi
+    global spi
 
-	adc = spi.xfer2([1,(8+channel)<<4,0])
-	data = ((adc[1]&3) << 8) + adc[2]
-	return data
+    adc = spi.xfer2([1,(8+channel)<<4,0])
+    data = ((adc[1]&3) << 8) + adc[2]
+    return data
 
 def voltConvert(data,places):
-	voltage = (data*3.3)/float(1023)
-	voltage = round (voltage,places)
-	return voltage
+    voltage = (data*3.3)/float(1023)
+    voltage = round (voltage,places)
+    return voltage
 
 def temperature():
-	temp = ReadChan(1)
-	temp = voltConvert (temp,2)
-	temp = (temp-float(0.5))*float(100)
-	return temp
+    temp = ReadChan(1)
+    temp = voltConvert (temp,2)
+    temp = (temp-float(0.5))*float(100)
+    return temp
 
 def lightSen():
     light =  ReadChan(0)
@@ -135,41 +135,41 @@ def lightSen():
 
 def humiditySen():
     humidity = ReadChan(2)
-	humidity = voltConvert(humidity,2)
-	return humidity
+    humidity = voltConvert(humidity,2)
+    return humidity
 
 def dacOut():
-	lightReading = lightSen()
-	humidityReading = humiditySen()
-	vout = (lightReading/float(1023))*humidityReading
-	vout = round(vout,2)
-	return vout
+    lightReading = lightSen()
+    humidityReading = humiditySen()
+    vout = (lightReading/float(1023))*humidityReading
+    vout = round(vout,2)
+    return vout
 
 def startStop():
-	global monitoring
-	if monitoring:
-		monitoring = False
-	else:
-		monitoring = True
-	
+    global monitoring
+    if monitoring:
+        monitoring = False
+    else:
+        monitoring = True
+    
 def initGPIO():
-	GPIO.setmode(GPIO.BCM)
-	GPIO.setwarnings(False)
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
 
-	#setup of pins
-	GPIO.setup(6,GPIO.OUT)
-	GPIO.output(6,False)
-	GPIO.setup(17,GPIO.IN,pull_up_down=GPIO.PUD_DOWN)
-	GPIO.setup(27,GPIO.IN,pull_up_down=GPIO.PUD_DOWN)
-	GPIO.setup(22,GPIO.IN,pull_up_down=GPIO.PUD_DOWN)
-	GPIO.setup(5, GPIO.IN,pull_up_down=GPIO.PUD_DOWN)
+    #setup of pins
+    GPIO.setup(6,GPIO.OUT)
+    GPIO.output(6,False)
+    GPIO.setup(17,GPIO.IN,pull_up_down=GPIO.PUD_DOWN)
+    GPIO.setup(27,GPIO.IN,pull_up_down=GPIO.PUD_DOWN)
+    GPIO.setup(22,GPIO.IN,pull_up_down=GPIO.PUD_DOWN)
+    GPIO.setup(5, GPIO.IN,pull_up_down=GPIO.PUD_DOWN)
 
-	
-	#button interrupts
-	GPIO.add_event_detect(17,GPIO.FALLING,callback=reset,bouncetime = 200)
-	GPIO.add_event_detect(27,GPIO.FALLING,callback=freqInc,bouncetime = 200)
-	GPIO.add_event_detect(22,GPIO.FALLING,callback=dismissAlarm,bouncetime = 200)
-	GPIO.add_event_detect(5 ,GPIO.FALLING,callback=startStop,bouncetime = 200)
+    
+    #button interrupts
+    GPIO.add_event_detect(17,GPIO.FALLING,callback=reset,bouncetime = 200)
+    GPIO.add_event_detect(27,GPIO.FALLING,callback=freqInc,bouncetime = 200)
+    GPIO.add_event_detect(22,GPIO.FALLING,callback=dismissAlarm,bouncetime = 200)
+    GPIO.add_event_detect(5 ,GPIO.FALLING,callback=startStop,bouncetime = 200)
 
 
 def main():
@@ -177,20 +177,20 @@ def main():
     global spi
     global monitoring
     global monitorFrequency, freqArray
-	
-	initGPIO()
+    
+    initGPIO()
  
     while monitoring: 
-		print("______________________")
-		alarm()
-		rtcTime()
-		timer()
-		print("Light    | {}".format(lightSen()))
-		print("Humidity | {}".format(humiditySen()))
-		print("Temp     | {}".format(temperature()))
-		print("DAC Out  | {}".format(dacOut()))
+        print("______________________")
+        alarm()
+        rtcTime()
+        timer()
+        print("Light    | {}".format(lightSen()))
+        print("Humidity | {}".format(humiditySen()))
+        print("Temp     | {}".format(temperature()))
+        print("DAC Out  | {}".format(dacOut()))
 
-		time.sleep (freqArray[monitorFrequency])
+        time.sleep (freqArray[monitorFrequency])
 if __name__ == "__main__":
     # Make sure the GPIO is stopped correctly
     try:
